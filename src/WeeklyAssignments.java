@@ -12,7 +12,7 @@ class Trade {
     }
 }
 
-public class TradeVolumeAnalysis {
+public class WeeklyAssignments {
 
     // 🔹 Merge Sort (ascending, stable)
     static void mergeSort(Trade[] trades) {
