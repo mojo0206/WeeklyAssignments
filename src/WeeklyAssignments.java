@@ -1,104 +1,118 @@
-class Client {
-    String name;
-    int riskScore;
-    double accountBalance;
+import java.util.ArrayList;
+import java.util.List;
 
-    Client(String name, int riskScore, double accountBalance) {
-        this.name = name;
-        this.riskScore = riskScore;
-        this.accountBalance = accountBalance;
+class Transaction {
+    String id;
+    double fee;
+    String timestamp; // format "HH:mm"
+
+    Transaction(String id, double fee, String timestamp) {
+        this.id = id;
+        this.fee = fee;
+        this.timestamp = timestamp;
     }
 
     void display() {
-        System.out.println(name + " : Risk=" + riskScore + ", Balance=" + accountBalance);
+        System.out.println(id + ": Fee=" + fee + ", TS=" + timestamp);
+    }
+
+    // Optional for concise print
+    public String toString() {
+        return id + ":" + fee + "@" + timestamp;
     }
 }
 
 public class WeeklyAssignments {
 
-    // 🔹 Bubble Sort (Ascending by Risk Score)
-    static void bubbleSort(Client[] clients) {
-        int n = clients.length;
+    // 🔹 Bubble Sort (Ascending by fee) - small batches <= 100
+    static void bubbleSort(List<Transaction> transactions) {
+        int n = transactions.size();
         int swapCount = 0;
+        int passCount = 0;
 
         for (int i = 0; i < n - 1; i++) {
+            boolean swapped = false;
             for (int j = 0; j < n - i - 1; j++) {
-                if (clients[j].riskScore > clients[j + 1].riskScore) {
-
+                if (transactions.get(j).fee > transactions.get(j + 1).fee) {
                     // Swap
-                    Client temp = clients[j];
-                    clients[j] = clients[j + 1];
-                    clients[j + 1] = temp;
-
+                    Transaction temp = transactions.get(j);
+                    transactions.set(j, transactions.get(j + 1));
+                    transactions.set(j + 1, temp);
+                    swapped = true;
                     swapCount++;
 
-                    // Visualization of swap
-                    System.out.println("Swapped: " + clients[j].name + " <-> " + clients[j + 1].name);
+                    System.out.println("Swapped: " + transactions.get(j).id + " <-> " + transactions.get(j + 1).id);
                 }
             }
+            passCount++;
+            if (!swapped) break; // Early termination if already sorted
         }
-        System.out.println("Total Swaps: " + swapCount);
+        System.out.println("Total passes: " + passCount + ", Total swaps: " + swapCount);
     }
 
-    // 🔹 Insertion Sort (Descending by Risk Score + Account Balance)
-    static void insertionSort(Client[] clients) {
-        int n = clients.length;
+    // 🔹 Insertion Sort (fee + timestamp) - medium batches 100-1000
+    static void insertionSort(List<Transaction> transactions) {
+        int n = transactions.size();
 
         for (int i = 1; i < n; i++) {
-            Client key = clients[i];
+            Transaction key = transactions.get(i);
             int j = i - 1;
 
-            // Sort by risk DESC, if equal then by balance DESC
+            // Stable sort: fee ascending, then timestamp ascending
             while (j >= 0 &&
-                    (clients[j].riskScore < key.riskScore ||
-                            (clients[j].riskScore == key.riskScore &&
-                                    clients[j].accountBalance < key.accountBalance))) {
+                    (transactions.get(j).fee > key.fee ||
+                            (transactions.get(j).fee == key.fee &&
+                                    transactions.get(j).timestamp.compareTo(key.timestamp) > 0))) {
 
-                clients[j + 1] = clients[j];
+                transactions.set(j + 1, transactions.get(j));
                 j--;
             }
-
-            clients[j + 1] = key;
+            transactions.set(j + 1, key);
         }
     }
 
-    // 🔹 Display Clients
-    static void displayClients(Client[] clients) {
-        for (Client c : clients) {
-            c.display();
+    // 🔹 Flag High-Fee Outliers (> $50)
+    static void flagHighFee(List<Transaction> transactions) {
+        System.out.println("\nHigh-Fee Outliers (> $50):");
+        boolean any = false;
+        for (Transaction t : transactions) {
+            if (t.fee > 50) {
+                System.out.println(t);
+                any = true;
+            }
         }
+        if (!any) System.out.println("None");
     }
 
-    // 🔹 Top N Highest Risk Clients
-    static void topClients(Client[] clients, int topN) {
-        System.out.println("\nTop " + topN + " High Risk Clients:");
-        for (int i = 0; i < topN && i < clients.length; i++) {
-            System.out.println(clients[i].name + " (" + clients[i].riskScore + ")");
+    // 🔹 Display Transactions
+    static void displayTransactions(List<Transaction> transactions) {
+        for (Transaction t : transactions) {
+            System.out.println(t);
         }
     }
 
     public static void main(String[] args) {
 
-        Client[] clients = {
-                new Client("ClientC", 80, 5000),
-                new Client("ClientA", 20, 2000),
-                new Client("ClientB", 50, 3000)
-        };
+        List<Transaction> transactions = new ArrayList<>();
+        transactions.add(new Transaction("id1", 10.5, "10:00"));
+        transactions.add(new Transaction("id2", 25.0, "09:30"));
+        transactions.add(new Transaction("id3", 5.0, "10:15"));
+        transactions.add(new Transaction("id4", 60.0, "11:00")); // high-fee outlier demo
 
-        System.out.println("Original Data:");
-        displayClients(clients);
+        System.out.println("Original Transactions:");
+        displayTransactions(transactions);
 
-        // 🔹 Bubble Sort (Ascending)
-        System.out.println("\nBubble Sort (Ascending Risk):");
-        bubbleSort(clients);
-        displayClients(clients);
+        // 🔹 Bubble Sort Example
+        System.out.println("\nBubble Sort (Fee Ascending):");
+        bubbleSort(transactions);
+        displayTransactions(transactions);
 
-        // 🔹 Insertion Sort (Descending)
-        System.out.println("\nInsertion Sort (Descending Risk + Balance):");
-        insertionSort(clients);
-        displayClients(clients);
+        // 🔹 Insertion Sort Example
+        System.out.println("\nInsertion Sort (Fee + Timestamp Ascending):");
+        insertionSort(transactions);
+        displayTransactions(transactions);
 
-        // 🔹 Top 3 (or Top 10 in real case)
-        topClients(clients, 3);
+        // 🔹 Flag High-Fee Transactions
+        flagHighFee(transactions);
     }
 }
