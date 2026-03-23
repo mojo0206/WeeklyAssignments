@@ -2,95 +2,93 @@ import java.util.Arrays;
 
 public class WeeklyAssignments {
 
-    // 🔹 Linear Search: first occurrence
-    static int linearFirst(String[] logs, String target) {
+    // 🔹 Linear Search for exact match
+    static int linearSearch(int[] risks, int target) {
         int comparisons = 0;
-        for (int i = 0; i < logs.length; i++) {
+        for (int i = 0; i < risks.length; i++) {
             comparisons++;
-            if (logs[i].equals(target)) {
-                System.out.println("Linear First: Index=" + i + ", Comparisons=" + comparisons);
+            if (risks[i] == target) {
+                System.out.println("Linear Search: Found at index=" + i + ", Comparisons=" + comparisons);
                 return i;
             }
         }
-        System.out.println("Linear First: Not Found, Comparisons=" + comparisons);
+        System.out.println("Linear Search: Not Found, Comparisons=" + comparisons);
         return -1;
     }
 
-    // 🔹 Linear Search: last occurrence
-    static int linearLast(String[] logs, String target) {
+    // 🔹 Binary Search for exact match
+    static int binarySearch(int[] risks, int target) {
+        int low = 0, high = risks.length - 1;
         int comparisons = 0;
-        int index = -1;
-        for (int i = 0; i < logs.length; i++) {
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
             comparisons++;
-            if (logs[i].equals(target)) index = i;
+            if (risks[mid] == target) {
+                System.out.println("Binary Search: Found at index=" + mid + ", Comparisons=" + comparisons);
+                return mid;
+            } else if (risks[mid] < target) low = mid + 1;
+            else high = mid - 1;
         }
-        System.out.println("Linear Last: Index=" + index + ", Comparisons=" + comparisons);
-        return index;
+        System.out.println("Binary Search: Not Found, Comparisons=" + comparisons);
+        return -1;
     }
 
-    // 🔹 Binary Search: first occurrence
-    static int binaryFirst(String[] logs, String target) {
-        int low = 0, high = logs.length - 1;
-        int result = -1;
+    // 🔹 Binary Search Floor (largest ≤ target)
+    static int binaryFloor(int[] risks, int target) {
+        int low = 0, high = risks.length - 1;
+        int floor = -1;
         int comparisons = 0;
 
         while (low <= high) {
             int mid = low + (high - low) / 2;
             comparisons++;
-            int cmp = logs[mid].compareTo(target);
-            if (cmp == 0) {
-                result = mid;
-                high = mid - 1; // look left for first occurrence
-            } else if (cmp < 0) low = mid + 1;
-            else high = mid - 1;
+            if (risks[mid] == target) {
+                floor = risks[mid];
+                break;
+            } else if (risks[mid] < target) {
+                floor = risks[mid];
+                low = mid + 1;
+            } else high = mid - 1;
         }
-        System.out.println("Binary First: Index=" + result + ", Comparisons=" + comparisons);
-        return result;
+        System.out.println("Binary Floor: " + floor + ", Comparisons=" + comparisons);
+        return floor;
     }
 
-    // 🔹 Binary Search: last occurrence
-    static int binaryLast(String[] logs, String target) {
-        int low = 0, high = logs.length - 1;
-        int result = -1;
+    // 🔹 Binary Search Ceiling (smallest ≥ target)
+    static int binaryCeil(int[] risks, int target) {
+        int low = 0, high = risks.length - 1;
+        int ceil = -1;
         int comparisons = 0;
 
         while (low <= high) {
             int mid = low + (high - low) / 2;
             comparisons++;
-            int cmp = logs[mid].compareTo(target);
-            if (cmp == 0) {
-                result = mid;
-                low = mid + 1; // look right for last occurrence
-            } else if (cmp < 0) low = mid + 1;
-            else high = mid - 1;
+            if (risks[mid] == target) {
+                ceil = risks[mid];
+                break;
+            } else if (risks[mid] > target) {
+                ceil = risks[mid];
+                high = mid - 1;
+            } else low = mid + 1;
         }
-        System.out.println("Binary Last: Index=" + result + ", Comparisons=" + comparisons);
-        return result;
-    }
-
-    // 🔹 Count occurrences using binary first/last
-    static int countOccurrences(String[] logs, String target) {
-        int first = binaryFirst(logs, target);
-        if (first == -1) return 0;
-        int last = binaryLast(logs, target);
-        return last - first + 1;
+        System.out.println("Binary Ceiling: " + ceil + ", Comparisons=" + comparisons);
+        return ceil;
     }
 
     public static void main(String[] args) {
-        String[] logs = {"accB", "accA", "accB", "accC", "accB"};
+        int[] riskBands = {10, 25, 50, 100}; // sorted
+        int threshold = 30;
 
-        // Linear Search
-        linearFirst(logs, "accB");
-        linearLast(logs, "accB");
+        System.out.println("Risk Bands: " + Arrays.toString(riskBands));
 
-        // Binary Search requires sorted logs
-        String[] sortedLogs = logs.clone();
-        Arrays.sort(sortedLogs);
-        System.out.println("\nSorted Logs: " + Arrays.toString(sortedLogs));
+        // Linear search (unsorted)
+        linearSearch(riskBands, threshold);
 
-        binaryFirst(sortedLogs, "accB");
-        binaryLast(sortedLogs, "accB");
-        int count = countOccurrences(sortedLogs, "accB");
-        System.out.println("Total Occurrences of accB: " + count);
+        // Binary search (sorted)
+        binarySearch(riskBands, threshold);
+
+        // Floor and Ceiling
+        binaryFloor(riskBands, threshold);
+        binaryCeil(riskBands, threshold);
     }
 }
