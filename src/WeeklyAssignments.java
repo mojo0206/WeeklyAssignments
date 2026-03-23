@@ -1,132 +1,96 @@
 import java.util.Arrays;
-import java.util.Random;
-
-class Asset {
-    String symbol;
-    double returnRate; // in percent
-    double volatility; // optional for quick sort tie-breaker
-
-    Asset(String symbol, double returnRate, double volatility) {
-        this.symbol = symbol;
-        this.returnRate = returnRate;
-        this.volatility = volatility;
-    }
-
-    public String toString() {
-        return symbol + ":" + returnRate + "%";
-    }
-}
 
 public class WeeklyAssignments {
 
-    // 🔹 Merge Sort (ascending returnRate, stable)
-    static void mergeSort(Asset[] assets) {
-        if (assets.length < 2) return;
-        mergeSortHelper(assets, 0, assets.length - 1);
-    }
-
-    static void mergeSortHelper(Asset[] assets, int left, int right) {
-        if (left >= right) return;
-        int mid = left + (right - left) / 2;
-        mergeSortHelper(assets, left, mid);
-        mergeSortHelper(assets, mid + 1, right);
-        merge(assets, left, mid, right);
-    }
-
-    static void merge(Asset[] assets, int left, int mid, int right) {
-        int n1 = mid - left + 1;
-        int n2 = right - mid;
-
-        Asset[] L = Arrays.copyOfRange(assets, left, mid + 1);
-        Asset[] R = Arrays.copyOfRange(assets, mid + 1, right + 1);
-
-        int i = 0, j = 0, k = left;
-        while (i < n1 && j < n2) {
-            if (L[i].returnRate <= R[j].returnRate) {
-                assets[k++] = L[i++];
-            } else {
-                assets[k++] = R[j++];
+    // 🔹 Linear Search: first occurrence
+    static int linearFirst(String[] logs, String target) {
+        int comparisons = 0;
+        for (int i = 0; i < logs.length; i++) {
+            comparisons++;
+            if (logs[i].equals(target)) {
+                System.out.println("Linear First: Index=" + i + ", Comparisons=" + comparisons);
+                return i;
             }
         }
-        while (i < n1) assets[k++] = L[i++];
-        while (j < n2) assets[k++] = R[j++];
+        System.out.println("Linear First: Not Found, Comparisons=" + comparisons);
+        return -1;
     }
 
-    // 🔹 Quick Sort (descending returnRate, tie-breaker: volatility ascending)
-    static void quickSort(Asset[] assets) {
-        quickSortHelper(assets, 0, assets.length - 1);
-    }
-
-    static void quickSortHelper(Asset[] assets, int low, int high) {
-        if (low < high) {
-            // Use median-of-3 pivot selection
-            int pivotIndex = medianOfThree(assets, low, high);
-            swap(assets, pivotIndex, high);
-            int pi = partition(assets, low, high);
-            quickSortHelper(assets, low, pi - 1);
-            quickSortHelper(assets, pi + 1, high);
+    // 🔹 Linear Search: last occurrence
+    static int linearLast(String[] logs, String target) {
+        int comparisons = 0;
+        int index = -1;
+        for (int i = 0; i < logs.length; i++) {
+            comparisons++;
+            if (logs[i].equals(target)) index = i;
         }
+        System.out.println("Linear Last: Index=" + index + ", Comparisons=" + comparisons);
+        return index;
     }
 
-    static int medianOfThree(Asset[] assets, int low, int high) {
-        int mid = low + (high - low) / 2;
-        double a = assets[low].returnRate;
-        double b = assets[mid].returnRate;
-        double c = assets[high].returnRate;
+    // 🔹 Binary Search: first occurrence
+    static int binaryFirst(String[] logs, String target) {
+        int low = 0, high = logs.length - 1;
+        int result = -1;
+        int comparisons = 0;
 
-        if ((a > b) != (a > c)) return low;
-        else if ((b > a) != (b > c)) return mid;
-        else return high;
-    }
-
-    static int partition(Asset[] assets, int low, int high) {
-        double pivot = assets[high].returnRate;
-        int i = low - 1;
-        for (int j = low; j < high; j++) {
-            if (assets[j].returnRate > pivot ||
-                    (assets[j].returnRate == pivot && assets[j].volatility < assets[high].volatility)) {
-                i++;
-                swap(assets, i, j);
-            }
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            comparisons++;
+            int cmp = logs[mid].compareTo(target);
+            if (cmp == 0) {
+                result = mid;
+                high = mid - 1; // look left for first occurrence
+            } else if (cmp < 0) low = mid + 1;
+            else high = mid - 1;
         }
-        swap(assets, i + 1, high);
-        return i + 1;
+        System.out.println("Binary First: Index=" + result + ", Comparisons=" + comparisons);
+        return result;
     }
 
-    static void swap(Asset[] assets, int i, int j) {
-        Asset temp = assets[i];
-        assets[i] = assets[j];
-        assets[j] = temp;
+    // 🔹 Binary Search: last occurrence
+    static int binaryLast(String[] logs, String target) {
+        int low = 0, high = logs.length - 1;
+        int result = -1;
+        int comparisons = 0;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            comparisons++;
+            int cmp = logs[mid].compareTo(target);
+            if (cmp == 0) {
+                result = mid;
+                low = mid + 1; // look right for last occurrence
+            } else if (cmp < 0) low = mid + 1;
+            else high = mid - 1;
+        }
+        System.out.println("Binary Last: Index=" + result + ", Comparisons=" + comparisons);
+        return result;
     }
 
-    // 🔹 Display Assets
-    static void displayAssets(Asset[] assets) {
-        for (Asset a : assets) System.out.print(a + " ");
-        System.out.println();
+    // 🔹 Count occurrences using binary first/last
+    static int countOccurrences(String[] logs, String target) {
+        int first = binaryFirst(logs, target);
+        if (first == -1) return 0;
+        int last = binaryLast(logs, target);
+        return last - first + 1;
     }
 
     public static void main(String[] args) {
+        String[] logs = {"accB", "accA", "accB", "accC", "accB"};
 
-        Asset[] portfolio = {
-                new Asset("AAPL", 12, 0.25),
-                new Asset("TSLA", 8, 0.40),
-                new Asset("GOOG", 15, 0.20),
-                new Asset("MSFT", 12, 0.15) // tie with AAPL for demo
-        };
+        // Linear Search
+        linearFirst(logs, "accB");
+        linearLast(logs, "accB");
 
-        System.out.println("Original Portfolio:");
-        displayAssets(portfolio);
+        // Binary Search requires sorted logs
+        String[] sortedLogs = logs.clone();
+        Arrays.sort(sortedLogs);
+        System.out.println("\nSorted Logs: " + Arrays.toString(sortedLogs));
 
-        // Merge Sort (ascending)
-        Asset[] mergeSorted = portfolio.clone();
-        mergeSort(mergeSorted);
-        System.out.println("\nMerge Sort (Ascending Return):");
-        displayAssets(mergeSorted);
-
-        // Quick Sort (descending with volatility tie-breaker)
-        Asset[] quickSorted = portfolio.clone();
-        quickSort(quickSorted);
-        System.out.println("\nQuick Sort (Descending Return + Volatility ASC):");
-        displayAssets(quickSorted);
+        binaryFirst(sortedLogs, "accB");
+        binaryLast(sortedLogs, "accB");
+        int count = countOccurrences(sortedLogs, "accB");
+        System.out.println("Total Occurrences of accB: " + count);
     }
 }
